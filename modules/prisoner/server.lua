@@ -5,6 +5,7 @@ RemoveUpdating = function (identifier)
 end
 
 local function updateQuery()
+    if next(updated_times) == nil then return end
     local query = 'UPDATE users SET users.remainingJailTime = users.remainingJailTime - CASE users.identifier'
     local values = {}
     for playerIdentifier, removedJailtime in pairs(updated_times) do
