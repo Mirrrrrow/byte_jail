@@ -8,7 +8,7 @@ byte_jail provides you with a jail system which is made using the ox-library!
 The script isn't finished 100% yet, but more like 90% so please help us if you find bugs and have ideas for features.
 
 ### Preview
-https://youtu.be/Webq0p2BWM8
+https://youtu.be/NIAZ159Zg7c
 
 ### Setup
 You can just start the script. Changes can be made in the [Settings](data/settings.lua) file.
