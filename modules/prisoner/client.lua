@@ -12,7 +12,7 @@ local function start_jail(time, firstTime)
                 TriggerEvent('skinchanger:loadClothes', skin, settings.clothes.female)
             end
         end)
-    
+
         gettingFreed = false
         currentTime = time
         utils.sendNotify({
@@ -29,10 +29,20 @@ local function start_jail(time, firstTime)
             SetEntityCoords(cache.ped, insideJail.x, insideJail.y, insideJail.z)
         end
 
-        local waited = 0
+        local waitingTime = 60 * 1000 -- 60 seconds
+        local startTime = GetGameTimer()
+
         while time > 0 and not gettingFreed do
-            Wait(0)
-            waited += 1
+            local currGameTime = GetGameTimer()
+            local elapsedTime = currGameTime - startTime
+
+            if elapsedTime >= waitingTime then
+                time -= 1
+                startTime = currGameTime
+                lib.callback.await('jail:server:updateJailtime', false)
+                currentTime = time
+            end
+
             if timeToAdd ~= 0 then
                 if time + timeToAdd <= 0 then
                     gettingFreed = true
@@ -43,17 +53,13 @@ local function start_jail(time, firstTime)
                     timeToAdd = 0
                     currentTime = time
                 end
+            end
 
-            end
-            if waited == 1500 then
-                time -= 1
-                waited = 0
-                lib.callback.await('jail:server:updateJailtime', false)
-                currentTime = time
-            end
             if gettingFreed then
                 break
             end
+
+            Wait(0)
         end
 
         local outsideJail = settings.positions.outsideJail
@@ -74,7 +80,7 @@ local function start_jail(time, firstTime)
 end
 
 if settings.commands.jailtime.use then
-    RegisterCommand(settings.commands.jailtime.name, function (source, args, raw)
+    RegisterCommand(settings.commands.jailtime.name, function(source, args, raw)
         if currentTime > 0 then
             utils.sendNotify({
                 title = settings.locales['notify_title'],
@@ -99,13 +105,13 @@ RegisterNetEvent('jail:client:freePlayer', function(data)
     gettingFreed = true
 end)
 
-RegisterNetEvent('jail:client:addJailtime', function (data)
+RegisterNetEvent('jail:client:addJailtime', function(data)
     local success = lib.callback.await('jail:server:checkKey', false, data.key)
     if not success then return end
     timeToAdd = data.time
 end)
 
-RegisterNetEvent('jail:client:delJailtime', function (data)
+RegisterNetEvent('jail:client:delJailtime', function(data)
     local success = lib.callback.await('jail:server:checkKey', false, data.key)
     if not success then return end
     timeToAdd = -data.time
